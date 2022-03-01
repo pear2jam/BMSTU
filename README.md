@@ -1,2 +1,2 @@
 # BMSTU
-here solving problems from baumanka
+here solving problems from BMSTU
