@@ -4,24 +4,27 @@ from random import random
 import time
 import numpy as np
 
-ang = 45
+ang_x = 0
+ang_y = 0
+ang_z = 0
+
 mode = 0  # from 0 to 2
 
 vertices = [
     [-1, 1, -1],
-    [1, 1, -1],
-    [1, -1, -1],
+    [1, 1, -1], # 1
+    [1, -1, -1], # 2
     [-1, -1, -1],
     [-1, 1, 1],
-    [1, 1, 1],
-    [1, -1, 1],
+    [1, 1, 1], # 5
+    [1, -1, 1], # 6
     [-1, -1, 1]
 ]
 
 polygons = [
     [0, 1, 2, 3],
     [1, 0, 4, 5],
-    [1, 5, 2, 6],
+    [1, 2, 6, 5],
     [7, 6, 2, 3],
     [7, 6, 5, 4],
     [3, 7, 4, 0]
@@ -44,12 +47,12 @@ edges = [
 ]
 
 colors = [
-    [1, 0, 0, 1],
-    [0, 1, 0, 1],
-    [0, 0, 1, 1],
-    [0.6, 0.6, 0.6, 1],
-    [0.7, 0.3, 0.8, 1],
-    [1, 0.8, 0.2, 1]
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0.6, 0.6, 0.6],
+    [0.7, 0.3, 0.8],
+    [1, 0.8, 0.2]
 ]
 
 mat_front = np.eye(4)
@@ -76,41 +79,45 @@ def main():
         glfw.terminate()
         return
     glfw.make_context_current(window)
-    #glfw.set_key_callback(window, key_callback)
+    glfw.set_key_callback(window, key_callback)
     while not glfw.window_should_close(window):
         display(window)
     glfw.destroy_window(window)
     glfw.terminate()
 
-def display(window):
-    #time.sleep(0.02)
-    global ang
-    glClear(GL_COLOR_BUFFER_BIT)
-    glLoadIdentity()
-    glScaled(0.5, 0.5, 0.5)
-    glRotated(ang, 1, 1, 1)
-    #ang += 1
-    glClearColor(1.0, 1.0, 1.0, 1.0)
+def draw_cube(trans_vec):
+    global ang_x, ang_y, ang_z
+
+
     glPushMatrix()
-    glRotatef(ang, 0, 0, 1)
+
+    glLoadIdentity()
+    glTranslatef(*trans_vec)
+    glClearColor(1.0, 1.0, 1.0, 1.0)
+
+    glRotatef(ang_x, 1, 0, 0)
+    glRotatef(ang_y, 0, 1, 0)
+    glRotatef(ang_z, 0, 0, 1)
+
+    glScaled(0.3, 0.3, 0.3)
     glBegin(GL_QUADS)
-    # glColor3f(*colors[0])
     for ind, poly in enumerate(polygons):
+
         v_1 = vertices[poly[0]]
         v_2 = vertices[poly[1]]
         v_3 = vertices[poly[2]]
         v_4 = vertices[poly[3]]
 
-        glColor4f(*colors[ind])
+        glColor3f(*colors[ind])
         glVertex3f(*v_1)
 
-        glColor4f(*colors[ind])
+        glColor3f(*colors[ind])
         glVertex3f(*v_2)
 
-        glColor4f(*colors[ind])
+        glColor3f(*colors[ind])
         glVertex3f(*v_3)
 
-        glColor4f(*colors[ind])
+        glColor3f(*colors[ind])
         glVertex3f(*v_4)
     glEnd()
 
@@ -126,12 +133,40 @@ def display(window):
     glEnd()
     glPopMatrix()
 
+
+def display(window):
+    glClear(GL_COLOR_BUFFER_BIT)
+
+    glMatrixMode(GL_PROJECTION)
+    glLoadMatrixf(mat_front)
+    glMatrixMode(GL_MODELVIEW)
+    draw_cube([-0.5,0.5,0])
+    glMatrixMode(GL_PROJECTION)
+    glLoadMatrixf(mat_top)
+    glMatrixMode(GL_MODELVIEW)
+    draw_cube([0.5, 0, -0.5])
     glMatrixMode(GL_PROJECTION)
     glLoadMatrixf(mat_side)
-
     glMatrixMode(GL_MODELVIEW)
+    draw_cube([0, -0.5, -0.5])
+
+    #glPopMatrix()
+
+    #glMatrixMode(GL_MODELVIEW)
     glfw.swap_buffers(window)
     glfw.poll_events()
+
+
+def key_callback(window, key, scancode, action,  mods):
+    global ang_x, ang_y, ang_z
+    if action == glfw.REPEAT:
+        if key == 81: # q
+            ang_x += 2
+        if key == 87: # w
+            ang_y += 2
+        if key == 69: # e
+            ang_z += 2
+
 
 
 main()
