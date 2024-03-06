@@ -2,8 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-# Интеграл от -1 до 2 == 13.782
-f = lambda x: 3*x*x-2*x+1 + 5*np.sin(x)
+# Интеграл от -1 до 2 == 28.357
+f = lambda x: -3*x*x*x+12*x*x-5*x+2 + 9*np.sin(x) - 2*np.cos(x)
 
 # Метод средних квадратов
 def mean_squares(f, a, b, n):
