@@ -48,3 +48,7 @@ a, b = np.linalg.solve(np.array([[a1, b1], [a2, b2]]), np.array([c1, c2]))
 
 # Итоговая функция
 f = lambda x: a*x+b
+
+
+# Среднеквадратичное отклонение
+np.mean((f(x)-y)*(f(x)-y))
