@@ -68,9 +68,8 @@ BinOp → + | - | * | / | POW | AND | OR | XOR | EQ | NE | LT | GT | LE | GE | M
 UnOp →  - | NOT
 ```
 
-## Лексическая структура и конкретный синтаксис
-
-Перейдём к конкретной грамматике:
+## Лексическая структура и синтаксис
+Итоговая грамматика
 ```
 Program → Program Func | Func
 Func →  FuncHeader FuncBody
