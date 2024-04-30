@@ -8,7 +8,8 @@
 каких-либо средств автоматизации решения задачи лексического анализа.
 
 # Индивидуальный вариант
-Комментарии: начинаются с «(*» или «{», заканчиваются на «*)» или «}» и могут пересекать границы строк текста.\
+Комментарии: начинаются с «(*» или «{», заканчиваются на «*)» или «}» и могут 
+пересекать границы строк текста.\
 Целочисленные литералы: последовательности десятичных цифр.\
 Дробные литералы: строки вида «digits/digits», где «digits» — последовательность десятичных цифр.\
 Атрибут (для лабораторных работ 1.3 и 1.5) дробного числа — пара целых чисел (числитель и знаменатель).\
@@ -47,7 +48,8 @@ class Token:
         self.start, self.end = start, end
     
     def __str__(self):
-        return f"{self.tok_type} | Val = {self.val} | Attr = {self.attr} | Start = ({self.start[0]}, {self.start[1]}) | Finish = ({self.end[0]}, {self.end[1]})"
+        return f"{self.tok_type} | Val = {self.val} | Attr = {self.attr} | \
+        Start = ({self.start[0]}, {self.start[1]}) | Finish = ({self.end[0]}, {self.end[1]})"
 ```
 
 `class Lexer`
@@ -112,13 +114,15 @@ class Lexer:
             elif cur == 'COMMENT':
                 if cur_token.val == '(' and c != '*':
                     cur = 'ERROR'
-                    cur_token = Token('ERROR', cur_token.val + c, cur_token.val, cur_token.start, cur_token.end)
+                    cur_token = Token('ERROR', cur_token.val + c, cur_token.val,\
+                    cur_token.start, cur_token.end)
                 elif cur_token.val[0] == '{' and c == '}':
                     cur_token.val += c
                     cur_token.end = [self.line, self.pos]
                     yield cur_token
                     cur = 'NONE'
-                elif len(cur_token.val) >= 3 and cur_token.val[0:2] == '(*' and cur_token.val[-1] == '*' and c == ')':
+                elif len(cur_token.val) >= 3 and cur_token.val[0:2] == \
+                '(*' and cur_token.val[-1] == '*' and c == ')':
                     cur_token.val += c
                     cur_token.attr = cur_token.attr[1:-2]
                     cur_token.end = [self.line, self.pos]
@@ -142,10 +146,12 @@ class Lexer:
                     cur = 'NONE'
                 elif c == '/':
                     cur = 'FRAC'
-                    cur_token = Token('FRAC', cur_token.val + '/', [cur_token.val, ''], cur_token.start, cur_token.end)
+                    cur_token = Token('FRAC', cur_token.val + '/', [cur_token.val, ''], \
+                cur_token.start, cur_token.end)
                 elif c not in self.DIGITS:
                     cur = 'ERROR'
-                    cur_token = Token('ERROR', cur_token.val + c, cur_token.val + c, cur_token.start, cur_token.end)
+                    cur_token = Token('ERROR', cur_token.val + c, cur_token.val + c,\
+                 cur_token.start, cur_token.end)
                 else:
                     cur_token.val += c
                     cur_token.attr += c
@@ -155,7 +161,8 @@ class Lexer:
             elif cur == 'FRAC':
                 if c == 'SPACE' or c == 'self.LINEEND':
                     if cur_token.attr[1] == '':
-                        cur_token = Token('ERROR', cur_token.val, cur_token.val, cur_token.start, cur_token.end)
+                        cur_token = Token('ERROR', cur_token.val, cur_token.val,\
+                     cur_token.start, cur_token.end)
                     cur_token.end = [self.line, self.pos]
                     yield cur_token
                     cur = 'NONE'
@@ -163,7 +170,8 @@ class Lexer:
                     cur_token.val += c
                     cur_token.attr[1] += c
                 else:
-                    cur_token = Token('ERROR', cur_token.val + c, cur_token.val + c, cur_token.start, cur_token.end)
+                    cur_token = Token('ERROR', cur_token.val + c, cur_token.val + c, \
+                cur_token.start, cur_token.end)
 
             # Если считываем ошибку
             elif cur == 'ERROR':
