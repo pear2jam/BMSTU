@@ -195,6 +195,24 @@ for l in tokens:
     print(l)
 ```
 
+# Тестирование
+Входная программа
+```
+(* w
+erw*) {} 123/234 12e 
+234/11 234/1t
+```
+Результат разбора
+```
+COMMENT | Val = (* w\nerw*) | Attr =  w\ner | Start = (1, 1) | Finish = (2, 5)
+COMMENT | Val = {} | Attr =  | Start = (2, 7) | Finish = (2, 8)
+FRAC | Val = 123/234 | Attr = ['123', '234'] | Start = (2, 10) | Finish = (2, 17)
+ERROR | Val = 12e | Attr = 12e | Start = (2, 18) | Finish = (2, 21)
+FRAC | Val = 234/11 | Attr = ['234', '11'] | Start = (3, 1) | Finish = (3, 7)
+ERROR | Val = 234/1t | Attr = 234/1t | Start = (3, 8) | Finish = (3, 14)
+EOF | Val =  | Attr =  | Start = (3, 14) | Finish = (3, 14)
+```
+
 # Вывод
 В результате выполнения лабораторной работы, я углубил свои знания в области лексического анализа 
 и объектно-ориентированного программирования. 
