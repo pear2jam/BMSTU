@@ -16,7 +16,8 @@ real, longreal, >=, :=, комментарии начинаются с :: и п�
 
 Опишем распознаваемые лексемы с помощью регулярных выражений:
 - **Идентификаторы**: [a-zA-Z][a-zA-Z0-9]*\
-Это выражение распознает непустые последовательности латинских букв и десятичных цифр, начинающиеся с буквы.
+Это выражение распознает непустые последовательности латинских букв и десятичных цифр,
+начинающиеся с буквы.
 - **Целочисленные литералы**: \d+\
 Это выражение распознает непустые последовательности десятичных цифр.
 - **Слова "real" и "longreal"**: real|longreal\
@@ -91,15 +92,18 @@ class Automata:
     def __init__(self, start, finishes_data : list, transitions : dict) -> None:
         """
         start (int): Start state
-        finishes_data (list(tuple)): List of finish states with their correspoding lexeme names - [(2, 'str'), (7, 'comment') ...]
-        transitions: dict(list(tuple)): dictionary of automata transitions in format - dict[state] = [(state, regex_rule)]
+        finishes_data (list(tuple)): List of finish states with their
+        correspoding lexeme names - [(2, 'str'), (7, 'comment') ...]
+        transitions: dict(list(tuple)): dictionary of automata transitions
+        in format - dict[state] = [(state, regex_rule)]
         """
 
         self.start = start
         self.finishes = [i[0] for i in finishes_data]
         self.finish_lexemes = [i[1] for i in finishes_data]
         self.transitions = transitions
-        if self.start in self.finishes: raise Exception('Finish states can not contain Start state')
+        if self.start in self.finishes: raise Exception('Finish states can not\
+        contain Start state')
         self.s = self.start
         self.attr = ''
     
@@ -111,7 +115,8 @@ class Automata:
     def update(self, symbol:str) -> str:
         #print(self.s, symbol)
         """
-        Updating automata by reading a symbol and returning lexema name corresponding to reached state: ('NONE' if not finial state)
+        Updating automata by reading a symbol and returning lexema name
+        corresponding to reached state: ('NONE' if not finial state)
         symbol (str): symbol to update an automata
         Return (str): lexema name
         """
@@ -121,7 +126,7 @@ class Automata:
         if self.s in self.transitions:
             rules = self.transitions[self.s]
             for rule in rules:
-                if rule[1].match(symbol): # if input symbol matches for certain transition rule, make transition
+                if rule[1].match(symbol):
                     self.s = rule[0]
                     return 'NONE', self.attr
 
@@ -166,9 +171,11 @@ class Lexer:
 
 automata = Automata(
     start = 0,
-    finishes_data = [(8, 'LONGREAL'), (12, 'REAL'), (14, '>='), (16, ':='), (17, 'COMMENT'), (19, 'IDENT'), (21, 'NUM')],
+    finishes_data = [(8, 'LONGREAL'), (12, 'REAL'), (14, '>='), (16, ':='), \
+    (17, 'COMMENT'), (19, 'IDENT'), (21, 'NUM')],
     transitions = {
-        0:  [(0, re.compile('[\s\r]')), (1, re.compile('l')), (9, re.compile('r')), (13, re.compile('>')), (15, re.compile(':')), (19, re.compile('[a-qst-z]')), (21, re.compile('\d+'))],
+        0:  [(0, re.compile('[\s\r]')), (1, re.compile('l')), (9, re.compile('r')),\
+     (13, re.compile('>')), (15, re.compile(':')), (19, re.compile('[a-qst-z]')), (21, re.compile('\d+'))],
         1:  [(2, re.compile('o')), (19, re.compile('[b-z0-9]'))],
         2:  [(3, re.compile('n')), (19, re.compile('[a-mo-z0-9]'))],
         3:  [(4, re.compile('g')), (19, re.compile('[a-fh-z0-9]'))],
@@ -202,10 +209,12 @@ automata = Automata(
 lex = Lexer('lab1-4/input.txt', automata)
 #for i in lex.next_token():
 #    print(i)
-for i in lex.next_token(): print(f'{i[0]}{" "*(8-len(i[0]))} line: {i[2]}, pos: {i[3]}-{i[4]}{" "*(5-len(str(i[3]))-len(str(i[4])))} val: {i[1]}')
+for i in lex.next_token(): print(f'{i[0]}{" "*(8-len(i[0]))} line: {i[2]}, pos:\
+     {i[3]}-{i[4]}{" "*(5-len(str(i[3]))-len(str(i[4])))} val: {i[1]}')
 ```
 
-Аналогично, как и в предыдущей лабораторной работе лексический анализатор является однопроходным
+Аналогично, как и в предыдущей лабораторной работе лексический 
+анализатор является однопроходным
 
 # Тестирование
 Входная программа
