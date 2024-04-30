@@ -268,6 +268,8 @@ STRING = pe.Terminal('STRING', '\'.*\'', str)
 
 Теперь определим синтаксис, вспомогательные функции и тело для разбора программы
 ```python
+make_op_lambda = lambda op: lambda: op
+
 def make_keyword(image):
     return pe.Terminal(image, image, lambda name: None, priority=10)
 
@@ -329,10 +331,6 @@ NCycleVar |= NType, VARNAME, CycleVar
 
 NArgs |= VARNAME, lambda vn: [vn]
 NArgs |= NArgs, VARNAME, lambda args, arg: args + [arg]
-
-
-def make_op_lambda(op):
-    return lambda: op
 
 
 for op in ('_eq_', '_ne_', '_lt_', '_gt_', '_le_', '_ge_'):
