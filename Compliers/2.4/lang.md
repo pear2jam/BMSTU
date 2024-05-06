@@ -30,21 +30,22 @@ Statement -> "^" Expr
            | "[" FUNCNAME Args "]"
            | "(" StatementTail
 StatementTail -> Type VARNAME ((")" (":=" Expr)?) | (Cycle Statements "%"))
+               | VARNAME Cycle Statements "%"
                | "&" Expr ")" Statements "%"
                | "?" Expr ")" Statements ("+++" Statements)? "%"
 Cycle -> ":" Expr "," Expr ("," INT_CONST)? ")"
-Args -> (Spec)+ 
+Args -> (Spec)*
 Expr -> LogicalExpr ((_or_ | _xor_) LogicalExpr)*
 LogicalExpr -> CompareExpr (_and_ CompareExpr)*
-CompareExpr -> ArithmExpr (CmpOp ArithmExpr)?
+CompareExpr -> ArithmExpr (CmpOp ArithmExpr)*
 CmpOp → _eq_ | _ne_ | _lt_ | _gt_ | _le_ | _ge_
 ArithmExpr -> PowExpr (("+" | "-")  PowExpr)*
 PowExpr -> Term (_pow_ PowExpr)?
 Term -> Factor (("*" | "/" | _mod_) Factor)*
-Factor -> (not_ | "-")? Spec
+Factor -> not_ Factor | "-" Factor | Spec
 FuncCall -> "[" FUNCNAME Args "]"
 Spec -> FuncCall 
-      | new_ Type (VARNAME | INT_CONST) 
+      | new_ Type Spec
       | Const
       | Var 
       | "(" Expr ")"
