@@ -1,6 +1,6 @@
 import numpy as np
 
-f = lambda x: 5
+f = lambda x: 8
 y_true = lambda x: 1/9*(12*x-7*np.exp(-6*x)+25)
 
 def method(n, a, b, h, p, q, x_0, o_h):
