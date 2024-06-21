@@ -174,6 +174,11 @@ void initialize_scanner(const char* program) {
 ```с++
 tok_num 0|(1)+
 
+{tok_num} {
+    yylval->tok_num = std::atoi(yytext);
+    return 1;
+}
+
 %x LITERAL STRING
 %%
 
@@ -257,11 +262,6 @@ tok_num 0|(1)+
 
 . {
     Exception("Unknown symbol", std::string(1, yytext[0]));
-}
-
-{tok_id} {
-    yylval->tok_id = std::atoi(yytext);
-    return 1;
 }
 
 %%
