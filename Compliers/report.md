@@ -3,7 +3,8 @@
 % Наумов Сергей ИУ9-62Б
 
 # Цель работы
-Целью данной работы является получение навыков выполнения семантического анализа.
+Целью данной работы является получение навыков 
+выполнения семантического анализа.
 
 # Реализация
 Возьмём ранее полученную в лабораторной 2.2 грамматику языка L4
@@ -158,7 +159,8 @@ import parser_edsl_sema.parser_edsl as pe
         
     @property
     def exception_text(self):
-        return (f'For call function {self.fun} needed {self.need} arguments,'
+        return (f'For call function {self.fun} needed {self.need}\
+ arguments,'
                 f' but have recieved {self.actual}')
 
    ```
@@ -242,18 +244,243 @@ class CycleNewVariable:
 
         type_attr, name = attrs
         ctype, cvariable = coords
-        return CycleNewVariable(type_attr, ctype.start, name, cvariable.start)
+        return CycleNewVariable(type_attr, ctype.start, name, \
+cvariable.start)
 
     def validate(self, vars_set):
         if self.type not in (BasicType.Int, BasicType.Char):
             res_type = type_to_str(self.var_type)
-            raise InvalidCycleVariableTypeError(self.type_position, res_type)
+            raise InvalidCycleVariableTypeError(self.type_position, \
+res_type)
 
         if self.name in vars_set:
-            raise MultipleVariablesError(self.name_position, self.name)
+            raise MultipleVariablesError(self.name_position,\
+ self.name)
 
         vars_set[self.name] = self.type
 ```
+
+3. Класс UnOpExpr, представляет собой выражение с унарной
+операцией в программе. Он содержит следующие атрибуты:
+
+op: строка, представляющая оператор.
+op_type: тип оператора, который может быть Type или BasicType.
+coords_op: координаты оператора в исходном коде, представленные 
+через pe.Position.
+expr: выражение, к которому применяется унарная операция.
+Метод create является статическим и создает действие (action), 
+которое используется для создания экземпляра UnOpExpr во время 
+парсинга кода. Это действие принимает атрибуты и координаты, 
+распаковывает их и возвращает новый экземпляр UnOpExpr.
+
+Метод validate выполняет валидацию унарной операции, проверяя
+следующее:
+
+Вызывает метод validate для валидации вложенного выражения expr.
+Если оператор coords_op равен 'not_', то проверяет, что тип
+expr.op_type является BasicType.Int или BasicType.Char. 
+Если нет, то вызывается исключение UnaryOperationTypeError.
+В противном случае устанавливает op_type как BasicType.Bool.
+Если оператор coords_op равен '-', то выполняет аналогичную 
+проверку и устанавливает op_type как BasicType.Int.
+
+```python
+@dataclass
+class UnOpExpr(Expr):
+    op: str
+    op_type: Union[Type, BasicType]
+    coords_op: Position
+    expr: Expr
+    
+    @staticmethod
+    def create(operation):
+        @pe.ExAction
+        def action(attrs, coords, res_coords):
+            expr, = attrs
+            coords_op, _ = coords
+            return UnOpExpr(operation, expr.op_type, \
+coords_op.start, expr)
+
+        return action
+
+    def validate(self, funcs_set, ret_type, vars_set):
+        self.expr.validate(self.coords_op, ret_type, vars_set)
+        if self.op == 'not_':
+            if self.expr.op_type not in (BasicType.Int, BasicType.Char):
+                raise UnaryOperationTypeError(self.coords_op, \
+self.op, self.expr.op_type)
+            else:
+                self.op_type = BasicType.Bool
+        elif self.op == '-':
+            if self.expr.op_type not in (BasicType.Int, \
+BasicType.Char):
+                raise UnaryOperationTypeError(self.coords_op,\
+ self.op, self.expr.op_type)
+            else:
+                self.op_type = BasicType.Int
+```
+
+4. Класс AssignStmt, представляет собой оператор присваивания
+   в программе. Он содержит следующие атрибуты:
+
+variable: переменная, которой может быть присвоено значение.
+Это может быть элемент массива (ArrayElemByVar), обычная переменная
+(Var) или базовая переменная (BasicVar).
+var_coord: координаты переменной в исходном коде, представленные
+через pe.Position.
+expression: выражение, значение которого присваивается переменной.
+Метод create используется для создания экземпляра AssignStmt 
+с использованием атрибутов и координат, полученных в результате
+парсинга кода. Этот метод возвращает новый экземпляр AssignStmt
+с начальной позицией оператора присваивания.
+
+Метод validate выполняет валидацию оператора присваивания, 
+проверяя следующее:
+
+Если expression является элементом массива (ArrayElemByVar), 
+то сначала валидируется expression, а затем variable.
+В противном случае сначала валидируется variable, а затем expression.
+Проверяется соответствие типов variable и expression. Если оба 
+типа являются типами массивов (ArrType), то дальнейшая проверка не требуется.
+Если тип expression является BasicType.Char и тип variable 
+является BasicType.Int, то дальнейшая проверка также не требуется.
+Если типы variable и expression не совпадают, то проверяется, 
+не является ли левый тип (variable.type) символом (<char>) и 
+правый тип (expression.type) строковой константой (const_str). 
+Если это не так, то вызывается исключение VarWrongTypeError
+
+```python
+@dataclass
+class AssignStmt(Statement):
+    variable: Union[ArrayElemByVar, \
+Var, BasicVar]
+    var_coord: Position
+    expression: Expr
+
+    @pe.ExAction
+    def create_assignment(attrs, coords,\
+res_coord):
+        variable, expression = attrs
+        _, coord_assign, _ = coords
+        return AssignStmt(variable, \
+coord_assign.start, expression)
+
+    def validate_assignment(self, funcs_set, \
+return_type, vars_set):
+        # Валидация выражения и переменной
+        if isinstance(self.expression, ArrayElemByVar):
+            self.expression.validate(funcs_set,\
+ return_type, vars_set)
+        self.variable.validate(funcs_set, \
+return_type, vars_set)
+        self.expression.validate(funcs_set, \
+return_type, vars_set)
+
+        # Проверка соответствия типов
+        if not (isinstance(self.variable.type, \
+ArrayType) and isinstance(self.expression.type, \
+ArrayType)):
+            if self.variable.type != self.expression.type:
+                left_type = type_to_str\
+(self.variable.type)
+                right_type = type_to_str\
+(self.expression.type)
+                if not (left_type == "<char>" \
+and right_type == "const_str"):
+                    raise VarWrongTypeError\
+(self.var_coord, left_type, right_type)
+```
+
+5. Класс Program представляет собой структуру данных,
+которая содержит список функций, определенных в программе.
+Метод validate этого класса выполняет две основные задачи:
+
+Первый проход: Он проверяет, не была ли какая-либо функция
+объявлена более одного раза. Это делается путем итерации 
+по списку функций self.functions и добавления имени каждой
+функции в словарь functions. Если имя функции уже присутствует
+в словаре, это означает, что функция была объявлена повторно,
+и вызывается исключение FunctionRedeclarationError.
+
+Второй проход: После проверки на повторное объявление, метод
+итерирует по списку функций еще раз, на этот раз вызывая метод
+validate каждой функции. Этот метод validate функции проверяет
+корректность самой функции, используя словарь functions, который
+содержит информацию обо всех других функциях, и vars_set, который
+представляет собой множество переменных, используемых в функции.
+
+Эти шаги обеспечивают, что каждая функция в программе уникальна 
+и что каждая функция сама по себе корректна в соответствии с правилами,
+определенными в ее методе validate.
+
+```python
+@dataclass
+class Program:
+    functions: list[Func]
+    
+    def validate(self):
+        functions = {}
+        # Первый проход: проверка \
+на повторное объявление функций
+        for func in self.functions:
+            func_name = func.header.func_name
+            func_name_pos = func.header.\
+func_name_pos
+            if func.header.func_name in functions:
+                raise FunctionRedeclarationError\
+(func_name_pos, func_name)
+            functions[func.header.func_name] = \
+func.header
+        for func in self.functions:
+            vars_set = {}
+            func.validate(functions, vars_set)
+```
+
+Далее формируется грамматика
+
+Начинаем с класса Prog и дальше двигаемся к функциям
+и их составляющих
+```python
+Prog |= Funcs, Program
+
+Funcs |= FuncD, lambda statement: [statement]
+Funcs |= Funcs, FuncD, lambda fun_list, fun: /
+fun_list + [fun]
+
+FuncD |= FuncT, NewFuncBody, Func
+
+FuncT |= '(', Type, '[', FUNC, FuncParams, ']', ')'
+FuncT |= '[', FUNC, FuncParams, ']', FunctionHeadShort.create
+
+NewFuncBody |= Stmts, '%%', FuncBody
+
+FuncParams |= SimpleVariable, lambda statement:/
+ [statement]
+FuncParams |= FuncParams, SimpleVariable, lambda/
+ vars_set, var: vars_set + [var]
+```
+
+Подробное описание задание грамматики для разбора
+можно найти в отчете к лабораторной 2.2
+
+После чего мы иннициализируем парсер, и считавая
+входной файл проводим семнатический анализ
+
+```python
+parser = pe.Parser(Prog)
+
+# Добавляем в парсер домены для пропуска
+parser.add_skipped_domain('\\{.*?\\}') # Комментарии
+parser.add_skipped_domain('\s') # Пробелы
+try:
+    with open('test.txt') as f:
+        tree = parser.parse(f.read())
+        tree.validate()
+        print('No semantic errors have found')
+except pe.Error as err:
+    print(f'Error {err.exception_text} in {err.pos}')
+```
+
 
 
     
